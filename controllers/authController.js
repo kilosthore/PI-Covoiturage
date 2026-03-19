@@ -1,45 +1,111 @@
-const User = require("../models/User");
-const bcrypt = require("bcryptjs");
+const User = require('../models/User')
 
-exports.getRegister = (req, res) => {
-  res.render("register");
-};
+const afficherInscription = (req, res) => {
+  res.render('register', { title: 'Inscription' })
+}
 
-exports.postRegister = async (req, res) => {
-  const { nom, prenom, email, password } = req.body;
+const inscrireUtilisateur = async (req, res) => {
+  const { prenom, nom, email, motDePasse, motDePasseConfirm, role, permis, assurance } = req.body
 
-  const hashed = await bcrypt.hash(password, 10);
+  if (!prenom || !nom || !email || !motDePasse || !motDePasseConfirm || !role) {
+    req.flash('error_msg', 'Veuillez remplir tous les champs obligatoires.')
+    return res.redirect('/register')
+  }
 
-  await User.create({
-    nom,
-    prenom,
-    email,
-    password: hashed
-  });
+  if (motDePasse !== motDePasseConfirm) {
+    req.flash('error_msg', 'Les mots de passe ne correspondent pas.')
+    return res.redirect('/register')
+  }
 
-  res.redirect("/login");
-};
+  if (motDePasse.length < 6) {
+    req.flash('error_msg', 'Le mot de passe doit avoir au moins 6 caractères.')
+    return res.redirect('/register')
+  }
 
-exports.getLogin = (req, res) => {
-  res.render("login");
-};
+  if (role === 'conducteur' && (!permis || !assurance)) {
+    req.flash('error_msg', 'Le numéro de permis et l\'assurance sont obligatoires pour les conducteurs.')
+    return res.redirect('/register')
+  }
 
-exports.postLogin = async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const dejaExistant = await User.findOne({ email })
+    if (dejaExistant) {
+      req.flash('error_msg', 'Ce courriel est déjà utilisé.')
+      return res.redirect('/register')
+    }
 
-  const user = await User.findOne({ email });
+    const donnees = { prenom, nom, email, motDePasse, role }
+    if (role === 'conducteur') {
+      donnees.permis    = permis
+      donnees.assurance = assurance
+    }
 
-  if (!user) return res.send("Utilisateur non trouvé");
+    await User.create(donnees)
+    req.flash('success_msg', 'Compte créé ! Connectez-vous.')
+    res.redirect('/login')
 
-  const match = await bcrypt.compare(password, user.password);
+  } catch (err) {
+    console.log('Erreur inscription :', err.message)
+    req.flash('error_msg', 'Erreur, réessayez.')
+    res.redirect('/register')
+  }
+}
 
-  if (!match) return res.send("Mot de passe incorrect");
+const afficherConnexion = (req, res) => {
+  res.render('login', { title: 'Connexion' })
+}
 
-  req.session.user = user;
-  res.redirect("/dashboard");
-};
+const connecterUtilisateur = async (req, res) => {
+  const { email, motDePasse } = req.body
 
-exports.logout = (req, res) => {
-  req.session.destroy();
-  res.redirect("/");
-};
+  try {
+    const utilisateur = await User.findOne({ email })
+    if (!utilisateur) {
+      req.flash('error_msg', 'Courriel ou mot de passe incorrect.')
+      return res.redirect('/login')
+    }
+
+    const ok = await utilisateur.comparerMotDePasse(motDePasse)
+    if (!ok) {
+      req.flash('error_msg', 'Courriel ou mot de passe incorrect.')
+      return res.redirect('/login')
+    }
+
+    req.session.user = {
+      _id:    utilisateur._id,
+      prenom: utilisateur.prenom,
+      nom:    utilisateur.nom,
+      email:  utilisateur.email,
+      role:   utilisateur.role,
+      photo:  utilisateur.photo || ''
+    }
+
+    // Redirection selon le rôle
+    if (utilisateur.role === 'admin') {
+      req.flash('success_msg', `Bienvenue ${utilisateur.prenom} !`)
+      return res.redirect('/admin')
+    }
+
+    req.flash('success_msg', `Bienvenue ${utilisateur.prenom} !`)
+    res.redirect('/dashboard')
+
+  } catch (err) {
+    console.log('Erreur connexion :', err.message)
+    req.flash('error_msg', 'Erreur, réessayez.')
+    res.redirect('/login')
+  }
+}
+
+const deconnecterUtilisateur = (req, res) => {
+  req.session.destroy(() => {
+    res.redirect('/')
+  })
+}
+
+module.exports = {
+  afficherInscription,
+  inscrireUtilisateur,
+  afficherConnexion,
+  connecterUtilisateur,
+  deconnecterUtilisateur
+}

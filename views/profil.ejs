@@ -1,0 +1,154 @@
+<% layout('layout') %>
+
+<section class="section">
+  <div style="max-width:600px; margin:0 auto;">
+    <h2 style="margin-bottom:28px;">👤 Mon profil</h2>
+
+    <!-- Photo de profil -->
+    <div class="bloc-form" style="text-align:center;">
+      <h3 style="margin-bottom:20px;">📷 Photo de profil</h3>
+
+      <!-- Affichage photo actuelle -->
+      <div style="margin-bottom:20px;">
+        <% if (userComplet.photo) { %>
+          <img id="photoActuelle" src="<%= userComplet.photo %>" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid var(--vert);" />
+        <% } else { %>
+          <div id="photoActuelle" class="avatar" style="width:120px;height:120px;font-size:2.5rem;margin:0 auto;">
+            <%= userComplet.prenom.charAt(0) %>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- Caméra -->
+      <div id="zone-camera" style="display:none; margin-bottom:16px;">
+        <video id="video" style="width:100%; max-width:320px; border-radius:12px; border:2px solid var(--vert);" autoplay></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:12px;">
+          <button onclick="prendrePhoto()" class="btn btn-vert">📸 Prendre la photo</button>
+          <button onclick="fermerCamera()" class="btn btn-outline">Annuler</button>
+        </div>
+      </div>
+
+      <!-- Aperçu photo prise -->
+      <div id="zone-apercu" style="display:none; margin-bottom:16px;">
+        <img id="apercu" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid var(--vert);" />
+        <div style="display:flex; gap:10px; justify-content:center; margin-top:12px;">
+          <button onclick="sauvegarderPhoto()" class="btn btn-vert">💾 Sauvegarder</button>
+          <button onclick="reprendrePhoto()" class="btn btn-outline">🔄 Reprendre</button>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+        <button onclick="ouvrirCamera()" class="btn btn-vert" id="btnCamera">📷 Utiliser la caméra</button>
+        <label class="btn btn-outline" style="cursor:pointer;">
+          📁 Choisir un fichier
+          <input type="file" accept="image/*" style="display:none;" onchange="chargerFichier(event)" />
+        </label>
+      </div>
+    </div>
+
+    <!-- Infos profil -->
+    <div class="bloc-form">
+      <h3 style="margin-bottom:20px;">📋 Informations personnelles</h3>
+      <div class="liste-details">
+        <div class="detail-ligne"><span>Prénom</span><strong><%= userComplet.prenom %></strong></div>
+        <div class="detail-ligne"><span>Nom</span><strong><%= userComplet.nom %></strong></div>
+        <div class="detail-ligne"><span>Courriel</span><strong><%= userComplet.email %></strong></div>
+        <div class="detail-ligne"><span>Rôle</span><strong><%= userComplet.role %></strong></div>
+        <% if (userComplet.role === 'conducteur') { %>
+          <div class="detail-ligne"><span>Permis</span><strong><%= userComplet.permis %></strong></div>
+          <div class="detail-ligne"><span>Assurance</span><strong><%= userComplet.assurance %></strong></div>
+          <div class="detail-ligne"><span>Statut</span>
+            <strong style="color:<%= userComplet.verifie ? 'var(--vert)' : 'var(--rouge)' %>">
+              <%= userComplet.verifie ? '✓ Vérifié' : '✗ Non vérifié' %>
+            </strong>
+          </div>
+          <div class="detail-ligne"><span>Note</span>
+            <strong>
+              <% for(let i=1;i<=5;i++){%><%= i<=Math.round(userComplet.note)?'★':'☆' %><%}%>
+              (<%= userComplet.nbEvaluations %> avis)
+            </strong>
+          </div>
+        <% } %>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  let stream = null
+  let photoData = null
+
+  async function ouvrirCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true })
+      document.getElementById('video').srcObject = stream
+      document.getElementById('zone-camera').style.display = 'block'
+      document.getElementById('btnCamera').style.display = 'none'
+    } catch (err) {
+      alert('Impossible d\'accéder à la caméra. Vérifiez les permissions.')
+    }
+  }
+
+  function fermerCamera() {
+    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null }
+    document.getElementById('zone-camera').style.display = 'none'
+    document.getElementById('btnCamera').style.display = 'inline-block'
+  }
+
+  function prendrePhoto() {
+    const video  = document.getElementById('video')
+    const canvas = document.getElementById('canvas')
+    canvas.width  = video.videoWidth
+    canvas.height = video.videoHeight
+    canvas.getContext('2d').drawImage(video, 0, 0)
+    photoData = canvas.toDataURL('image/jpeg', 0.8)
+
+    document.getElementById('apercu').src = photoData
+    document.getElementById('zone-camera').style.display = 'none'
+    document.getElementById('zone-apercu').style.display = 'block'
+    fermerCamera()
+  }
+
+  function reprendrePhoto() {
+    document.getElementById('zone-apercu').style.display = 'none'
+    ouvrirCamera()
+  }
+
+  async function sauvegarderPhoto() {
+    try {
+      const res  = await fetch('/profil/photo', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ photo: photoData })
+      })
+      const data = await res.json()
+      if (data.ok) {
+        document.getElementById('zone-apercu').style.display = 'none'
+        document.getElementById('btnCamera').style.display = 'inline-block'
+        // Mettre à jour la photo affichée
+        const el = document.getElementById('photoActuelle')
+        if (el.tagName === 'IMG') {
+          el.src = photoData
+        } else {
+          el.outerHTML = `<img id="photoActuelle" src="${photoData}" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid var(--vert);" />`
+        }
+        alert('✅ Photo sauvegardée !')
+      }
+    } catch (err) {
+      alert('Erreur lors de la sauvegarde.')
+    }
+  }
+
+  function chargerFichier(event) {
+    const file   = event.target.files[0]
+    const reader = new FileReader()
+    reader.onload = e => {
+      photoData = e.target.result
+      document.getElementById('apercu').src = photoData
+      document.getElementById('zone-apercu').style.display = 'block'
+    }
+    reader.readAsDataURL(file)
+  }
+</script>

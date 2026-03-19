@@ -1,26 +1,35 @@
 require("dotenv").config();
 
 const express = require("express");
+const mongoose = require("mongoose");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const expressLayouts = require("express-ejs-layouts");
 
-const connectDB = require("./config/db");
-
 const app = express();
 
-connectDB();
 
-app.set("view engine", "ejs");
-app.use(expressLayouts);
+// =======================
+// 🔹 Connexion MongoDB
+// =======================
+mongoose.connect(process.env.MONGO_URI)
+.then(() => console.log("MongoDB connecté"))
+.catch(err => console.log(err));
 
-app.use(express.urlencoded({ extended: true }));
+
+// =======================
+// 🔹 Middlewares
+// =======================
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+
+// Fichiers statiques (CSS, images, etc.)
 app.use(express.static("public"));
 
-/* ✅ 1️⃣ SESSION D'ABORD */
+// Session
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: "secretkey",
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({
@@ -29,15 +38,43 @@ app.use(
   })
 );
 
-/* ✅ 2️⃣ ENSUITE res.locals */
+
+// =======================
+// 🔹 Variables globales
+// =======================
 app.use((req, res, next) => {
-  res.locals.user = req.session ? req.session.user : null;
+  res.locals.user = req.session.user || null;
   next();
 });
 
-/* ✅ 3️⃣ ROUTES */
-app.use("/", require("./routes/authRoutes"));
 
-app.listen(process.env.PORT, () => {
-  console.log("Serveur lancé sur http://localhost:5000");
+// =======================
+// 🔹 EJS Layout
+// =======================
+app.use(expressLayouts);
+app.set("view engine", "ejs");
+app.set("layout", "layout");
+
+
+// =======================
+// 🔹 Routes
+// =======================
+const authRoutes = require("./routes/authRoutes");
+app.use("/", authRoutes);
+
+
+// =======================
+// 🔹 Page 404
+// =======================
+app.use((req, res) => {
+  res.status(404).send("Page non trouvée");
+});
+
+
+// =======================
+// 🔹 Lancement serveur
+// =======================
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Serveur lancé sur http://localhost:${PORT}`);
 });

@@ -1,0 +1,52 @@
+<% layout('layout') %>
+
+<section class="section">
+  <h2>Trajets disponibles</h2>
+
+  <!-- Recherche -->
+  <form action="/trajets" method="GET" class="form-recherche-inline">
+    <input type="text"  name="depart"  placeholder="📍 Départ"      value="<%= filtre.depart %>"  />
+    <input type="text"  name="arrivee" placeholder="🎯 Arrivée"    value="<%= filtre.arrivee %>" />
+    <input type="date"  name="date"    value="<%= filtre.date %>" />
+    <button type="submit" class="btn btn-vert">Chercher</button>
+    <a href="/trajets" class="btn btn-gris">Réinitialiser</a>
+  </form>
+
+  <div class="resultat-count"><strong><%= trajets.length %></strong> trajet(s) trouvé(s) &nbsp;<a href="/trajets/nouveau" class="btn btn-vert btn-petit">+ Publier</a></div>
+
+  <% if (trajets.length === 0) { %>
+    <p class="vide">Aucun trajet trouvé. <a href="/trajets/nouveau">Publiez le premier !</a></p>
+  <% } else { %>
+    <div class="grille-trajets">
+      <% trajets.forEach(trajet => { %>
+        <div class="carte-trajet" onclick="window.location='/trajets/<%= trajet._id %>'">
+          <div class="carte-haut">
+            <div class="avatar"><%= trajet.conducteur.prenom.charAt(0) %></div>
+            <div>
+              <strong><%= trajet.conducteur.prenom %> <%= trajet.conducteur.nom.charAt(0) %>.</strong>
+              <div class="etoiles"><% for(let i=1;i<=5;i++){%><%= i<=trajet.conducteur.note?'★':'☆' %><%}%></div>
+            </div>
+            <% if(trajet.conducteur.verifie){ %><span class="badge-verifie">✓ Vérifié</span><% } %>
+          </div>
+          <div class="route">
+            <span><%= trajet.villeDepart %></span>
+            <span class="fleche">→</span>
+            <span><%= trajet.villeArrivee %></span>
+          </div>
+          <div class="carte-infos">
+            <span>📅 <%= new Date(trajet.dateDepart).toLocaleDateString('fr-CA') %></span>
+            <span>🕐 <%= trajet.heureDepart %></span>
+            <span>💺 <%= trajet.placesDisponibles - trajet.passagers.length %> place(s)</span>
+          </div>
+          <div class="carte-bas">
+            <% if(trajet.typePartage === 'gratuit'){ %>
+              <span class="tag-gratuit">🤝 Gratuit</span>
+            <% } else { %>
+              <span class="tag-partage">💵 Partage de frais</span>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</section>

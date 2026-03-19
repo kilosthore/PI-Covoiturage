@@ -1,0 +1,82 @@
+<% layout('layout') %>
+
+<section class="section">
+  <h2>Publier un trajet</h2>
+
+  <form action="/trajets/nouveau" method="POST" class="grand-form">
+
+    <div class="bloc-form">
+      <h3>📍 Itinéraire</h3>
+      <div class="deux-colonnes">
+        <div class="champ"><label>Ville de départ *</label><input type="text" name="villeDepart" placeholder="Ex : Montréal" required /></div>
+        <div class="champ"><label>Ville d'arrivée *</label><input type="text" name="villeArrivee" placeholder="Ex : Québec" required /></div>
+      </div>
+      <div class="deux-colonnes">
+        <div class="champ"><label>Adresse départ (optionnel)</label><input type="text" name="adresseDepart" placeholder="Ex : Métro Berri" /></div>
+        <div class="champ"><label>Adresse arrivée (optionnel)</label><input type="text" name="adresseArrivee" placeholder="Ex : Vieux-Port" /></div>
+      </div>
+    </div>
+
+    <div class="bloc-form">
+      <h3>📅 Date et heure</h3>
+      <div class="deux-colonnes">
+        <div class="champ"><label>Date *</label><input type="date" name="dateDepart" required /></div>
+        <div class="champ"><label>Heure *</label><input type="time" name="heureDepart" required /></div>
+      </div>
+    </div>
+
+    <div class="bloc-form">
+      <h3>💺 Places et tarif</h3>
+      <div class="deux-colonnes">
+        <div class="champ">
+          <label>Nombre de places *</label>
+          <select name="placesDisponibles">
+            <option value="1">1 place</option>
+            <option value="2">2 places</option>
+            <option value="3" selected>3 places</option>
+            <option value="4">4 places</option>
+            <option value="5">5 places</option>
+          </select>
+        </div>
+        <div class="champ">
+          <label>Type de partage *</label>
+          <select name="typePartage">
+            <option value="partage_frais">💵 Partage de frais</option>
+            <option value="gratuit">🤝 Gratuit</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="bloc-form">
+      <h3>🚘 Véhicule (optionnel)</h3>
+      <div class="deux-colonnes">
+        <div class="champ"><label>Marque</label><input type="text" name="vehiculeMarque" placeholder="Ex : Toyota" /></div>
+        <div class="champ"><label>Modèle</label><input type="text" name="vehiculeModele" placeholder="Ex : Corolla" /></div>
+      </div>
+    </div>
+
+    <div class="bloc-form">
+      <h3>⚙️ Préférences</h3>
+      <div class="cases-cocher">
+        <label><input type="checkbox" name="musique" /> 🎵 Musique OK</label>
+        <label><input type="checkbox" name="animaux" /> 🐾 Animaux OK</label>
+        <label><input type="checkbox" name="bagages" checked /> 🧳 Bagages OK</label>
+        <label><input type="checkbox" name="fumeur" />  🚬 Fumeur OK</label>
+      </div>
+    </div>
+
+    <div class="bloc-form">
+      <h3>💬 Message (optionnel)</h3>
+      <div class="champ">
+        <textarea name="description" rows="4" placeholder="Ex : Je pars du métro Berri, pause à Drummondville..."></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <a href="/trajets" class="btn btn-gris">Annuler</a>
+      <button type="submit" class="btn btn-vert btn-grand">🚗 Publier mon trajet</button>
+    </div>
+
+  </form>
+</section>

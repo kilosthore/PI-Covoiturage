@@ -1,27 +1,112 @@
-<div class="row justify-content-center">
-  <div class="col-md-6">
-    <div class="card shadow-lg p-4">
-      <h3 class="text-center mb-4">Créer un compte</h3>
+<% layout('layout') %>
 
-      <form method="POST" action="/register">
-        <div class="mb-3">
-          <input name="nom" class="form-control" placeholder="Nom" required>
-        </div>
-
-        <div class="mb-3">
-          <input name="prenom" class="form-control" placeholder="Prénom" required>
-        </div>
-
-        <div class="mb-3">
-          <input name="email" type="email" class="form-control" placeholder="Email" required>
-        </div>
-
-        <div class="mb-3">
-          <input name="password" type="password" class="form-control" placeholder="Mot de passe" required>
-        </div>
-
-        <button class="btn btn-warning w-100">S'inscrire</button>
-      </form>
+<section class="section-auth">
+  <div class="auth-image">
+    <div class="auth-image-contenu">
+      <h2>Rejoignez CitéCovoit ! 🍁</h2>
+      <p>Créez votre compte gratuit et commencez à covoiturer dès aujourd'hui.</p>
+      <div class="auth-avantages">
+        <div>✅ Inscription 100% gratuite</div>
+        <div>✅ Passager, Conducteur ou Admin</div>
+        <div>✅ Communauté sécuritaire</div>
+        <div>✅ Partout au Canada</div>
+      </div>
     </div>
   </div>
-</div>
+  <div class="auth-formulaire">
+    <div class="carte-auth">
+      <div style="text-align:center; margin-bottom:24px;">
+        <div style="font-size:2rem;">🚗</div>
+        <h2>Créer un compte</h2>
+        <p>C'est gratuit et rapide !</p>
+      </div>
+
+      <form action="/register" method="POST" id="formInscription">
+
+        <!-- CHOIX DU RÔLE -->
+        <div class="choix-role" style="grid-template-columns: 1fr 1fr 1fr;">
+          <div class="role-carte" onclick="choisirRole('passager')" id="carte-passager">
+            <div class="role-icone">🙋</div>
+            <strong>Passager</strong>
+            <p>Je cherche des trajets</p>
+            <input type="radio" name="role" value="passager" id="role-passager" required style="display:none;" />
+          </div>
+          <div class="role-carte" onclick="choisirRole('conducteur')" id="carte-conducteur">
+            <div class="role-icone">🚗</div>
+            <strong>Conducteur</strong>
+            <p>Je propose des trajets</p>
+            <input type="radio" name="role" value="conducteur" id="role-conducteur" required style="display:none;" />
+          </div>
+          <div class="role-carte" onclick="choisirRole('admin')" id="carte-admin">
+            <div class="role-icone">🛡️</div>
+            <strong>Administrateur</strong>
+            <p>Je gère la plateforme</p>
+            <input type="radio" name="role" value="admin" id="role-admin" required style="display:none;" />
+          </div>
+        </div>
+
+        <div class="deux-colonnes">
+          <div class="champ">
+            <label>Prénom *</label>
+            <input type="text" name="prenom" placeholder="Marie" required />
+          </div>
+          <div class="champ">
+            <label>Nom *</label>
+            <input type="text" name="nom" placeholder="Tremblay" required />
+          </div>
+        </div>
+
+        <div class="champ">
+          <label>Adresse courriel *</label>
+          <input type="email" name="email" placeholder="vous@exemple.ca" required />
+        </div>
+        <div class="champ">
+          <label>Mot de passe *</label>
+          <input type="password" name="motDePasse" placeholder="Minimum 6 caractères" required minlength="6" />
+        </div>
+        <div class="champ">
+          <label>Confirmer le mot de passe *</label>
+          <input type="password" name="motDePasseConfirm" placeholder="Répétez le mot de passe" required />
+        </div>
+
+        <!-- CHAMPS CONDUCTEUR -->
+        <div id="champs-conducteur" style="display:none;">
+          <hr style="margin:20px 0; border-color:var(--gris-bord);" />
+          <p style="font-weight:600; margin-bottom:16px;">🚗 Informations du conducteur</p>
+          <div class="champ">
+            <label>Numéro de permis de conduire *</label>
+            <input type="text" name="permis" id="permis" placeholder="Ex : A12345-678901-23" />
+          </div>
+          <div class="champ">
+            <label>Numéro d'assurance automobile *</label>
+            <input type="text" name="assurance" id="assurance" placeholder="Ex : AXA-2024-789456" />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-vert btn-plein" style="margin-top:12px;">Créer mon compte</button>
+      </form>
+      <p class="lien-auth">Déjà un compte ? <a href="/login">Se connecter</a></p>
+    </div>
+  </div>
+</section>
+
+<script>
+  function choisirRole(role) {
+    document.getElementById('carte-passager').classList.remove('actif')
+    document.getElementById('carte-conducteur').classList.remove('actif')
+    document.getElementById('carte-admin').classList.remove('actif')
+
+    document.getElementById('role-' + role).checked = true
+    document.getElementById('carte-' + role).classList.add('actif')
+
+    if (role === 'conducteur') {
+      document.getElementById('champs-conducteur').style.display = 'block'
+      document.getElementById('permis').required    = true
+      document.getElementById('assurance').required = true
+    } else {
+      document.getElementById('champs-conducteur').style.display = 'none'
+      document.getElementById('permis').required    = false
+      document.getElementById('assurance').required = false
+    }
+  }
+</script>

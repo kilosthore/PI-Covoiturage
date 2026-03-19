@@ -1,9 +1,134 @@
-<div class="text-center">
-    <h1 class="display-4 fw-bold">Bienvenue sur notre plateforme de covoiturage</h1>
-    <p class="lead">Partagez vos trajets facilement et économisez ensemble.</p>
+<% layout('layout') %>
 
-    <div class="mt-4">
-        <a href="/register" class="btn btn-warning btn-lg me-3">Créer un compte</a>
-        <a href="/login" class="btn btn-dark btn-lg">Se connecter</a>
+<!-- HERO avec image d'arrière-plan -->
+<section class="hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-contenu">
+    <div class="hero-badge">🍁 Québec & Canada</div>
+    <h1>Voyagez ensemble,<br><span class="hero-accent">dépensez moins</span></h1>
+    <p>Plateforme de covoiturage 100% gratuite — simple, rapide et sécuritaire.</p>
+
+    <div class="hero-form">
+      <form action="/trajets" method="GET" class="form-recherche">
+        <div class="champ-recherche">
+          <span>📍</span>
+          <input type="text" name="depart" placeholder="Ville de départ" />
+        </div>
+        <div class="champ-recherche">
+          <span>🎯</span>
+          <input type="text" name="arrivee" placeholder="Ville d'arrivée" />
+        </div>
+        <div class="champ-recherche">
+          <span>📅</span>
+          <input type="date" name="date" />
+        </div>
+        <button type="submit" class="btn btn-vert btn-grand">Rechercher</button>
+      </form>
     </div>
-</div>
+
+    <div class="stats">
+      <div class="stat"><strong>10 000+</strong><span>Membres</span></div>
+      <div class="stat-sep"></div>
+      <div class="stat"><strong>500+</strong><span>Trajets</span></div>
+      <div class="stat-sep"></div>
+      <div class="stat"><strong>100%</strong><span>Gratuit</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- TRAJETS RÉCENTS -->
+<section class="section">
+  <div class="section-titre">
+    <div>
+      <h2>Trajets disponibles</h2>
+      <p style="color:var(--texte-gris); margin-top:4px;">Trouvez votre prochain covoiturage</p>
+    </div>
+    <a href="/trajets" class="btn btn-outline">Voir tous →</a>
+  </div>
+
+  <% if (trajets.length === 0) { %>
+    <div class="vide-bloc">
+      <div style="font-size:3rem;">🚗</div>
+      <p>Aucun trajet pour l'instant.</p>
+      <a href="/trajets/nouveau" class="btn btn-vert">Publiez le premier !</a>
+    </div>
+  <% } else { %>
+    <div class="grille-trajets">
+      <% trajets.forEach(trajet => { %>
+        <div class="carte-trajet" onclick="window.location='/trajets/<%= trajet._id %>'">
+          <div class="carte-haut">
+            <div class="avatar"><%= trajet.conducteur.prenom.charAt(0) %></div>
+            <div>
+              <strong><%= trajet.conducteur.prenom %> <%= trajet.conducteur.nom.charAt(0) %>.</strong>
+              <div class="etoiles"><% for(let i=1;i<=5;i++){%><%= i<=trajet.conducteur.note?'★':'☆' %><%}%></div>
+            </div>
+            <% if(trajet.conducteur.verifie){ %><span class="badge-verifie">✓ Vérifié</span><% } %>
+          </div>
+          <div class="route">
+            <span><%= trajet.villeDepart %></span>
+            <span class="fleche">→</span>
+            <span><%= trajet.villeArrivee %></span>
+          </div>
+          <div class="carte-infos">
+            <span>📅 <%= new Date(trajet.dateDepart).toLocaleDateString('fr-CA') %></span>
+            <span>🕐 <%= trajet.heureDepart %></span>
+            <span>💺 <%= trajet.placesDisponibles - trajet.passagers.length %> place(s)</span>
+          </div>
+          <div class="carte-bas">
+            <% if(trajet.typePartage === 'gratuit'){ %>
+              <span class="tag-gratuit">🤝 Gratuit</span>
+            <% } else { %>
+              <span class="tag-partage">💵 Partage de frais</span>
+            <% } %>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
+
+<!-- COMMENT ÇA MARCHE -->
+<section class="section-fonce">
+  <div class="section-inner">
+    <h2 style="text-align:center; color:white; margin-bottom:12px;">Comment ça marche ?</h2>
+    <p style="text-align:center; color:rgba(255,255,255,0.6); margin-bottom:48px;">En 4 étapes simples</p>
+    <div class="etapes">
+      <div class="etape">
+        <div class="num">1</div>
+        <h3>Inscrivez-vous</h3>
+        <p>Créez votre compte gratuitement en 2 minutes.</p>
+      </div>
+      <div class="etape">
+        <div class="num">2</div>
+        <h3>Trouvez un trajet</h3>
+        <p>Cherchez parmi les trajets disponibles près de chez vous.</p>
+      </div>
+      <div class="etape">
+        <div class="num">3</div>
+        <h3>Réservez</h3>
+        <p>Envoyez une demande au conducteur en un clic.</p>
+      </div>
+      <div class="etape">
+        <div class="num">4</div>
+        <h3>Voyagez !</h3>
+        <p>Partagez le trajet et économisez ensemble.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<% if (!user) { %>
+<section class="section">
+  <div class="cta-bloc">
+    <div class="cta-texte">
+      <h2>Prêt à covoiturer gratuitement ?</h2>
+      <p>Rejoignez des milliers de membres au Québec et au Canada.</p>
+    </div>
+    <div class="cta-boutons">
+      <a href="/register" class="btn btn-vert btn-grand">Créer mon compte</a>
+      <a href="/trajets"  class="btn btn-outline btn-grand">Voir les trajets</a>
+    </div>
+  </div>
+</section>
+<% } %>

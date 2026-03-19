@@ -1,0 +1,15 @@
+<% layout('layout') %>
+
+<section class="section">
+  <h2>Contactez-nous</h2>
+
+  <form class="grand-form" onsubmit="alert('Message envoyé !'); return false;">
+    <div class="deux-colonnes">
+      <div class="champ"><label>Prénom</label><input type="text" placeholder="Marie" /></div>
+      <div class="champ"><label>Nom</label><input type="text" placeholder="Tremblay" /></div>
+    </div>
+    <div class="champ"><label>Courriel</label><input type="email" placeholder="vous@exemple.ca" /></div>
+    <div class="champ"><label>Message</label><textarea rows="5" placeholder="Votre message..."></textarea></div>
+    <button type="submit" class="btn btn-vert">Envoyer</button>
+  </form>
+</section>

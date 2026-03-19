@@ -1,0 +1,139 @@
+<% layout('layout') %>
+
+<section class="section">
+
+  <a href="/trajets" class="btn btn-gris" style="margin-bottom:24px; display:inline-block;">← Retour aux trajets</a>
+
+  <div class="detail-grille">
+
+    <!-- COLONNE GAUCHE -->
+    <div class="detail-gauche">
+
+      <!-- Route -->
+      <div class="bloc-form">
+        <h2 class="route" style="font-size:1.5rem;">
+          <%= trajet.villeDepart %> <span class="fleche">→</span> <%= trajet.villeArrivee %>
+        </h2>
+        <p style="color:var(--texte-gris); margin-top:8px;">
+          📅 <%= new Date(trajet.dateDepart).toLocaleDateString('fr-CA', { weekday:'long', day:'numeric', month:'long', year:'numeric' }) %>
+          &nbsp;·&nbsp; 🕐 <%= trajet.heureDepart %>
+        </p>
+      </div>
+
+      <!-- Détails -->
+      <div class="bloc-form">
+        <h3 style="margin-bottom:16px;">📋 Détails du trajet</h3>
+        <div class="liste-details">
+          <% if (trajet.adresseDepart) { %>
+            <div class="detail-ligne"><span>📍 Point de départ</span><strong><%= trajet.adresseDepart %></strong></div>
+          <% } %>
+          <% if (trajet.adresseArrivee) { %>
+            <div class="detail-ligne"><span>🎯 Point d'arrivée</span><strong><%= trajet.adresseArrivee %></strong></div>
+          <% } %>
+          <div class="detail-ligne"><span>💺 Places disponibles</span><strong><%= trajet.placesDisponibles - trajet.passagers.length %> / <%= trajet.placesDisponibles %></strong></div>
+          <div class="detail-ligne"><span>💵 Tarif</span><strong><%= trajet.typePartage === 'gratuit' ? '🤝 Gratuit' : '💵 Partage de frais' %></strong></div>
+          <% if (trajet.vehiculeMarque) { %>
+            <div class="detail-ligne"><span>🚘 Véhicule</span><strong><%= trajet.vehiculeMarque %> <%= trajet.vehiculeModele %></strong></div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Préférences -->
+      <div class="bloc-form">
+        <h3 style="margin-bottom:16px;">⚙️ Préférences du conducteur</h3>
+        <div class="carte-infos">
+          <span class="<%= trajet.fumeur  ? 'tag-gratuit' : 'tag-non' %>"><%= trajet.fumeur  ? '🚬 Fumeur OK'      : '🚬 Non-fumeur' %></span>
+          <span class="<%= trajet.animaux ? 'tag-gratuit' : 'tag-non' %>"><%= trajet.animaux ? '🐾 Animaux OK'     : '🐾 Pas d\'animaux' %></span>
+          <span class="<%= trajet.musique ? 'tag-gratuit' : 'tag-non' %>"><%= trajet.musique ? '🎵 Musique OK'     : '🎵 Silence svp' %></span>
+          <span class="<%= trajet.bagages ? 'tag-gratuit' : 'tag-non' %>"><%= trajet.bagages ? '🧳 Bagages OK'     : '🧳 Petits bagages' %></span>
+        </div>
+      </div>
+
+      <!-- Message conducteur -->
+      <% if (trajet.description) { %>
+      <div class="bloc-form">
+        <h3 style="margin-bottom:12px;">💬 Message du conducteur</h3>
+        <p style="color:var(--texte-gris); line-height:1.7;"><%= trajet.description %></p>
+      </div>
+      <% } %>
+
+    </div>
+
+    <!-- COLONNE DROITE -->
+    <div class="detail-droite">
+
+      <!-- Conducteur -->
+      <div class="bloc-form">
+        <h3 style="margin-bottom:16px;">🧑 Le conducteur</h3>
+        <div class="carte-haut" style="margin-bottom:12px;">
+          <div class="avatar"><%= trajet.conducteur.prenom.charAt(0) %></div>
+          <div>
+            <strong><%= trajet.conducteur.prenom %> <%= trajet.conducteur.nom.charAt(0) %>.</strong>
+            <div class="etoiles">
+              <% for(let i=1;i<=5;i++){%><%= i<=Math.round(trajet.conducteur.note)?'★':'☆' %><%}%>
+              (<%= trajet.conducteur.nbEvaluations %>)
+            </div>
+            <% if(trajet.conducteur.verifie){ %>
+              <span class="badge-verifie">✓ Vérifié</span>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION -->
+      <div class="bloc-form" style="text-align:center;">
+
+        <% if (!user) { %>
+          <p style="color:var(--texte-gris); margin-bottom:16px;">Connectez-vous pour réserver une place.</p>
+          <a href="/login" class="btn btn-vert btn-plein">Se connecter</a>
+
+        <% } else if (trajet.conducteur._id.toString() === user._id.toString()) { %>
+          <p style="color:var(--vert); font-weight:600;">✅ Vous êtes le conducteur de ce trajet.</p>
+
+        <% } else if (dejaReserve) { %>
+          <% if (dejaReserve.statut === 'en_attente') { %>
+            <p style="color:#856404; font-weight:600;">⏳ Demande envoyée — en attente de confirmation.</p>
+          <% } else if (dejaReserve.statut === 'accepte') { %>
+            <p style="color:var(--vert); font-weight:600;">✅ Votre réservation est confirmée !</p>
+          <% } else { %>
+            <p style="color:var(--rouge); font-weight:600;">❌ Votre demande a été refusée.</p>
+          <% } %>
+
+        <% } else if (trajet.passagers.length >= trajet.placesDisponibles) { %>
+          <p style="color:var(--rouge); font-weight:600;">❌ Ce trajet est complet.</p>
+
+        <% } else { %>
+          <p style="color:var(--texte-gris); margin-bottom:16px;">
+            <strong><%= trajet.placesDisponibles - trajet.passagers.length %></strong> place(s) disponible(s)
+          </p>
+          <form action="/trajets/<%= trajet._id %>/reserver" method="POST">
+            <div class="champ" style="text-align:left;">
+              <label>Message au conducteur (optionnel)</label>
+              <textarea name="message" rows="3" placeholder="Ex : Je serai ponctuel, j'ai un petit bagage..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-vert btn-plein" style="margin-top:10px;">
+              🙋 Demander une réservation
+            </button>
+          </form>
+        <% } %>
+
+        <a href="/trajets" class="btn btn-gris btn-plein" style="margin-top:10px;">← Retour</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<style>
+  .detail-grille { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+  .detail-gauche { display: flex; flex-direction: column; gap: 0; }
+  .detail-droite { position: sticky; top: 90px; }
+  .liste-details { display: flex; flex-direction: column; gap: 12px; }
+  .detail-ligne  { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--gris-bord); font-size: 0.9rem; }
+  .detail-ligne span { color: var(--texte-gris); }
+  .tag-non { background: #f8d7da; color: #721c24; padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; }
+  @media (max-width: 768px) {
+    .detail-grille { grid-template-columns: 1fr; }
+    .detail-droite { position: static; }
+  }
+</style>

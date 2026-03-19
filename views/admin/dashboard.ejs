@@ -1,0 +1,133 @@
+<% layout('layout') %>
+
+<section class="section">
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:32px;">
+    <div>
+      <h2>🛡️ Administration</h2>
+      <p style="color:var(--texte-gris);">Gestion de la plateforme CitéCovoit</p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="admin-stats">
+    <div class="admin-stat-carte">
+      <div class="admin-stat-num"><%= utilisateurs.length %></div>
+      <div class="admin-stat-label">Utilisateurs total</div>
+    </div>
+    <div class="admin-stat-carte">
+      <div class="admin-stat-num"><%= nbConducteurs %></div>
+      <div class="admin-stat-label">Conducteurs</div>
+    </div>
+    <div class="admin-stat-carte">
+      <div class="admin-stat-num"><%= nbPassagers %></div>
+      <div class="admin-stat-label">Passagers</div>
+    </div>
+    <div class="admin-stat-carte">
+      <div class="admin-stat-num"><%= trajets.length %></div>
+      <div class="admin-stat-label">Trajets publiés</div>
+    </div>
+  </div>
+
+  <!-- Utilisateurs -->
+  <div class="bloc-dashboard">
+    <div class="bloc-titre">
+      <h3>👥 Tous les utilisateurs (<%= utilisateurs.length %>)</h3>
+    </div>
+    <table class="tableau">
+      <thead>
+        <tr><th>Nom</th><th>Courriel</th><th>Rôle</th><th>Inscription</th><th>Statut</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <% utilisateurs.forEach(u => { %>
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:10px;">
+                <% if (u.photo) { %>
+                  <img src="<%= u.photo %>" style="width:36px;height:36px;border-radius:50%;object-fit:cover;" />
+                <% } else { %>
+                  <div class="avatar" style="width:36px;height:36px;font-size:0.9rem;"><%= u.prenom.charAt(0) %></div>
+                <% } %>
+                <strong><%= u.prenom %> <%= u.nom %></strong>
+              </div>
+            </td>
+            <td><%= u.email %></td>
+            <td>
+              <span class="statut <%= u.role === 'conducteur' ? 'statut-actif' : u.role === 'admin' ? 'statut-complet' : 'statut-en_attente' %>">
+                <%= u.role %>
+              </span>
+            </td>
+            <td><%= new Date(u.createdAt).toLocaleDateString('fr-CA') %></td>
+            <td>
+              <% if (u.role === 'conducteur') { %>
+                <span class="statut <%= u.verifie ? 'statut-actif' : 'statut-annule' %>">
+                  <%= u.verifie ? '✓ Vérifié' : '✗ Non vérifié' %>
+                </span>
+              <% } else { %>
+                <span style="color:var(--texte-gris);">—</span>
+              <% } %>
+            </td>
+            <td style="display:flex; gap:6px; flex-wrap:wrap;">
+              <% if (u.role === 'conducteur' && !u.verifie) { %>
+                <form action="/admin/utilisateurs/<%= u._id %>/verifier" method="POST">
+                  <button class="btn btn-vert btn-petit">✓ Vérifier</button>
+                </form>
+              <% } %>
+              <% if (u.role !== 'admin') { %>
+                <form action="/admin/utilisateurs/<%= u._id %>/supprimer" method="POST" onsubmit="return confirm('Supprimer cet utilisateur ?')">
+                  <button class="btn btn-rouge btn-petit">🗑️ Supprimer</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Trajets -->
+  <div class="bloc-dashboard">
+    <div class="bloc-titre">
+      <h3>🚗 Tous les trajets (<%= trajets.length %>)</h3>
+    </div>
+    <table class="tableau">
+      <thead>
+        <tr><th>Itinéraire</th><th>Conducteur</th><th>Date</th><th>Statut</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+        <% trajets.forEach(t => { %>
+          <tr>
+            <td><strong><%= t.villeDepart %> → <%= t.villeArrivee %></strong></td>
+            <td><%= t.conducteur ? t.conducteur.prenom + ' ' + t.conducteur.nom : '—' %></td>
+            <td><%= new Date(t.dateDepart).toLocaleDateString('fr-CA') %></td>
+            <td><span class="statut statut-<%= t.statut %>"><%= t.statut %></span></td>
+            <td>
+              <form action="/admin/trajets/<%= t._id %>/supprimer" method="POST" onsubmit="return confirm('Supprimer ce trajet ?')">
+                <button class="btn btn-rouge btn-petit">🗑️ Supprimer</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<style>
+  .admin-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .admin-stat-carte {
+    background: white;
+    border: 1px solid var(--gris-bord);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: var(--ombre);
+  }
+  .admin-stat-num   { font-size: 2.2rem; font-weight: 800; color: var(--vert); }
+  .admin-stat-label { color: var(--texte-gris); font-size: 0.85rem; margin-top: 4px; }
+  @media (max-width: 768px) { .admin-stats { grid-template-columns: 1fr 1fr; } }
+</style>

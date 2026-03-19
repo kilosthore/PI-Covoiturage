@@ -1,19 +1,36 @@
-<div class="row justify-content-center">
-  <div class="col-md-6">
-    <div class="card shadow-lg p-4">
-      <h3 class="text-center mb-4">Connexion</h3>
+<% layout('layout') %>
 
-      <form method="POST" action="/login">
-        <div class="mb-3">
-          <input name="email" type="email" class="form-control" placeholder="Email" required>
-        </div>
-
-        <div class="mb-3">
-          <input name="password" type="password" class="form-control" placeholder="Mot de passe" required>
-        </div>
-
-        <button class="btn btn-dark w-100">Se connecter</button>
-      </form>
+<section class="section-auth">
+  <div class="auth-image">
+    <div class="auth-image-contenu">
+      <h2>Bon retour ! 👋</h2>
+      <p>Connectez-vous pour accéder à votre compte CitéCovoit et trouver votre prochain trajet.</p>
+      <div class="auth-avantages">
+        <div>✅ 100% gratuit</div>
+        <div>✅ Trajets au Québec & Canada</div>
+        <div>✅ Communauté de confiance</div>
+      </div>
     </div>
   </div>
-</div>
+  <div class="auth-formulaire">
+    <div class="carte-auth">
+      <div style="text-align:center; margin-bottom:28px;">
+        <div style="font-size:2.5rem;">🚗</div>
+        <h2>Connexion</h2>
+        <p>Content de vous revoir sur CitéCovoit !</p>
+      </div>
+      <form action="/login" method="POST">
+        <div class="champ">
+          <label>Adresse courriel</label>
+          <input type="email" name="email" placeholder="vous@exemple.ca" required />
+        </div>
+        <div class="champ">
+          <label>Mot de passe</label>
+          <input type="password" name="motDePasse" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn btn-vert btn-plein" style="margin-top:8px;">Se connecter</button>
+      </form>
+      <p class="lien-auth">Pas de compte ? <a href="/register">S'inscrire gratuitement</a></p>
+    </div>
+  </div>
+</section>

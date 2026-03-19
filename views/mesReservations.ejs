@@ -1,0 +1,46 @@
+<% layout('layout') %>
+
+<section class="section">
+  <h2>🎫 Mes réservations</h2>
+  <p style="color:var(--texte-gris); margin-bottom:30px;">Suivez le statut de toutes vos demandes.</p>
+
+  <% if (reservations.length === 0) { %>
+    <p class="vide">
+      Aucune réservation pour l'instant.
+      <a href="/trajets">Chercher un trajet</a>
+    </p>
+  <% } else { %>
+    <table class="tableau">
+      <thead>
+        <tr>
+          <th>Trajet</th>
+          <th>Date du trajet</th>
+          <th>Demande envoyée le</th>
+          <th>Statut</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% reservations.forEach(r => { %>
+          <tr>
+            <td><strong><%= r.trajet.villeDepart %> → <%= r.trajet.villeArrivee %></strong></td>
+            <td><%= new Date(r.trajet.dateDepart).toLocaleDateString('fr-CA') %> à <%= r.trajet.heureDepart %></td>
+            <td><%= new Date(r.createdAt).toLocaleDateString('fr-CA') %></td>
+            <td>
+              <% if (r.statut === 'en_attente') { %>
+                <span class="statut" style="background:#fff3cd; color:#856404;">⏳ En attente</span>
+              <% } else if (r.statut === 'accepte') { %>
+                <span class="statut" style="background:#d4edda; color:#155724;">✅ Acceptée</span>
+              <% } else { %>
+                <span class="statut" style="background:#f8d7da; color:#721c24;">❌ Refusée</span>
+              <% } %>
+            </td>
+            <td>
+              <a href="/trajets/<%= r.trajet._id %>" class="btn btn-gris btn-petit">Voir le trajet</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>

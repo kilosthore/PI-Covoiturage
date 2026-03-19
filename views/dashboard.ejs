@@ -1,10 +1,130 @@
-<div class="text-center">
-    <h1 class="fw-bold">Bienvenue <%= user.prenom %> 👋</h1>
-    <p class="lead">Vous êtes connecté à votre espace personnel.</p>
+<% layout('layout') %>
 
-    <div class="card mt-4 shadow p-4">
-        <h4>Informations</h4>
-        <p><strong>Nom :</strong> <%= user.nom %></p>
-        <p><strong>Email :</strong> <%= user.email %></p>
+<section class="section">
+  <h2 style="margin-bottom:28px;">Bonjour, <%= user.prenom %> 👋</h2>
+
+  <!-- ════ CONDUCTEUR ════ -->
+  <% if (user.role === 'conducteur') { %>
+
+  <div class="bloc-dashboard">
+    <div class="bloc-titre">
+      <h3>🚘 Mes trajets publiés (<%= mesTrajets.length %>)</h3>
+      <a href="/trajets/nouveau" class="btn btn-vert btn-petit">+ Nouveau trajet</a>
     </div>
-</div>
+
+    <% if (mesTrajets.length === 0) { %>
+      <p class="vide">Aucun trajet publié. <a href="/trajets/nouveau">Publiez-en un !</a></p>
+    <% } else { %>
+      <table class="tableau">
+        <thead>
+          <tr><th>Itinéraire</th><th>Date</th><th>Places</th><th>Statut</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <% mesTrajets.forEach(trajet => { %>
+            <tr>
+              <td><strong><%= trajet.villeDepart %> → <%= trajet.villeArrivee %></strong></td>
+              <td><%= new Date(trajet.dateDepart).toLocaleDateString('fr-CA') %> à <%= trajet.heureDepart %></td>
+              <td><%= trajet.passagers.length %> / <%= trajet.placesDisponibles %></td>
+              <td><span class="statut statut-<%= trajet.statut %>"><%= trajet.statut %></span></td>
+              <td style="display:flex; gap:6px; flex-wrap:wrap;">
+                <a href="/trajets/<%= trajet._id %>" class="btn btn-outline btn-petit">👁 Voir</a>
+                <% if (trajet.statut !== 'annule') { %>
+                  <a href="/trajets/<%= trajet._id %>/modifier" class="btn btn-gris btn-petit">✏️ Modifier</a>
+                  <form action="/trajets/<%= trajet._id %>/annuler" method="POST" onsubmit="return confirm('Annuler ce trajet ? Les passagers seront notifiés.')">
+                    <button class="btn btn-rouge btn-petit">⚠️ Annuler</button>
+                  </form>
+                <% } %>
+                <form action="/trajets/<%= trajet._id %>/supprimer" method="POST" onsubmit="return confirm('Supprimer définitivement ce trajet ?')">
+                  <button class="btn btn-rouge btn-petit">🗑️ Supprimer</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+  <div class="bloc-dashboard">
+    <div class="bloc-titre">
+      <h3>📬 Demandes de réservation reçues (<%= demandesRecues.length %>)</h3>
+    </div>
+
+    <% if (demandesRecues.length === 0) { %>
+      <p class="vide">Aucune demande en attente.</p>
+    <% } else { %>
+      <table class="tableau">
+        <thead>
+          <tr><th>Passager</th><th>Trajet</th><th>Message</th><th>Date</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <% demandesRecues.forEach(r => { %>
+            <tr>
+              <td><strong><%= r.passager.prenom %> <%= r.passager.nom.charAt(0) %>.</strong></td>
+              <td><%= r.trajet.villeDepart %> → <%= r.trajet.villeArrivee %></td>
+              <td><%= r.message || '—' %></td>
+              <td><%= new Date(r.createdAt).toLocaleDateString('fr-CA') %></td>
+              <td style="display:flex; gap:8px;">
+                <form action="/reservations/<%= r._id %>/accepter" method="POST">
+                  <button class="btn btn-vert btn-petit">✅ Accepter</button>
+                </form>
+                <form action="/reservations/<%= r._id %>/refuser" method="POST">
+                  <button class="btn btn-rouge btn-petit">❌ Refuser</button>
+                </form>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+  <% } %>
+
+  <!-- ════ PASSAGER ════ -->
+  <% if (user.role === 'passager') { %>
+
+  <div class="bloc-dashboard">
+    <div class="bloc-titre">
+      <h3>🙋 Mes trajets rejoints (<%= trajetsRejoints.length %>)</h3>
+      <a href="/trajets" class="btn btn-vert btn-petit">Chercher un trajet</a>
+    </div>
+
+    <% if (trajetsRejoints.length === 0) { %>
+      <p class="vide">Vous n'avez rejoint aucun trajet. <a href="/trajets">Chercher un trajet</a></p>
+    <% } else { %>
+      <table class="tableau">
+        <thead>
+          <tr><th>Itinéraire</th><th>Conducteur</th><th>Date</th><th>Statut</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          <% trajetsRejoints.forEach(trajet => { %>
+            <tr>
+              <td><strong><%= trajet.villeDepart %> → <%= trajet.villeArrivee %></strong></td>
+              <td><%= trajet.conducteur.prenom %> <%= trajet.conducteur.nom.charAt(0) %>.</td>
+              <td><%= new Date(trajet.dateDepart).toLocaleDateString('fr-CA') %></td>
+              <td><span class="statut statut-<%= trajet.statut %>"><%= trajet.statut %></span></td>
+              <td style="display:flex; gap:6px;">
+                <a href="/trajets/<%= trajet._id %>" class="btn btn-outline btn-petit">👁 Voir</a>
+                <% if (trajet.statut === 'complet' || trajet.statut === 'annule') { %>
+                  <a href="/trajets/<%= trajet._id %>/evaluer" class="btn btn-vert btn-petit">⭐ Évaluer</a>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    <% } %>
+  </div>
+
+  <div class="bloc-dashboard">
+    <div class="bloc-titre">
+      <h3>🎫 Mes réservations</h3>
+      <a href="/mes-reservations" class="btn btn-vert btn-petit">Voir tout →</a>
+    </div>
+    <p class="vide">Consultez le statut de toutes vos demandes de réservation.</p>
+  </div>
+
+  <% } %>
+
+</section>

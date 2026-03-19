@@ -1,0 +1,69 @@
+<% layout('layout') %>
+
+<section class="section">
+  <a href="/dashboard" class="btn btn-outline" style="margin-bottom:24px; display:inline-block;">← Retour</a>
+
+  <div style="max-width:600px; margin:0 auto;">
+    <h2 style="margin-bottom:8px;">⭐ Évaluer le trajet</h2>
+    <p style="color:var(--texte-gris); margin-bottom:32px;">
+      <%= trajet.villeDepart %> → <%= trajet.villeArrivee %>
+    </p>
+
+    <% if (cibles.length === 0) { %>
+      <div class="bloc-form" style="text-align:center;">
+        <p class="vide">Aucune personne à évaluer pour ce trajet.</p>
+      </div>
+    <% } %>
+
+    <% cibles.forEach(cible => { %>
+      <% const dejaFait = dejaCibles.includes(cible._id.toString()) %>
+      <div class="bloc-form" style="margin-bottom:20px;">
+        <div class="carte-haut" style="margin-bottom:20px;">
+          <div class="avatar"><%= cible.prenom.charAt(0) %></div>
+          <div>
+            <strong><%= cible.prenom %> <%= cible.nom.charAt(0) %>.</strong>
+            <div class="etoiles">
+              <% for(let i=1;i<=5;i++){%><%= i<=Math.round(cible.note)?'★':'☆' %><%}%>
+              (<%= cible.nbEvaluations %>)
+            </div>
+          </div>
+        </div>
+
+        <% if (dejaFait) { %>
+          <p style="color:var(--vert); font-weight:600;">✅ Déjà évalué</p>
+        <% } else { %>
+          <form action="/trajets/<%= trajet._id %>/evaluer" method="POST">
+            <input type="hidden" name="cibleId" value="<%= cible._id %>" />
+
+            <div class="champ">
+              <label>Note *</label>
+              <div class="etoiles-select" id="etoiles-<%= cible._id %>">
+                <% for(let i=1;i<=5;i++) { %>
+                  <span onclick="noterEtoile('<%= cible._id %>', <%= i %>)" style="font-size:2rem; cursor:pointer; color:#ddd;">★</span>
+                <% } %>
+              </div>
+              <input type="hidden" name="note" id="note-<%= cible._id %>" required />
+            </div>
+
+            <div class="champ">
+              <label>Commentaire (optionnel)</label>
+              <textarea name="commentaire" rows="3" placeholder="Partagez votre expérience..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-vert">Envoyer l'évaluation</button>
+          </form>
+        <% } %>
+      </div>
+    <% }) %>
+  </div>
+</section>
+
+<script>
+  function noterEtoile(cibleId, note) {
+    const etoiles = document.querySelectorAll(`#etoiles-${cibleId} span`)
+    etoiles.forEach((e, i) => {
+      e.style.color = i < note ? '#f59e0b' : '#ddd'
+    })
+    document.getElementById(`note-${cibleId}`).value = note
+  }
+</script>
