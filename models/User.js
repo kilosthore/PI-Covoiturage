@@ -12,7 +12,10 @@ const UserSchema = new mongoose.Schema({
   assurance:     { type: String, default: '' },
   note:          { type: Number, default: 0 },
   nbEvaluations: { type: Number, default: 0 },
-  verifie:       { type: Boolean, default: false }
+  verifie:             { type: Boolean, default: false },
+  numeroEtudiant:      { type: String,  default: '' },
+  estEtudiant:         { type: Boolean, default: false },
+  estEtudiantVerifie:  { type: Boolean, default: false }
 }, { timestamps: true })
 
 UserSchema.pre('save', async function(next) {

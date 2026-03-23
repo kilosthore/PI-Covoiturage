@@ -55,6 +55,18 @@
         <div class="detail-ligne"><span>Nom</span><strong><%= userComplet.nom %></strong></div>
         <div class="detail-ligne"><span>Courriel</span><strong><%= userComplet.email %></strong></div>
         <div class="detail-ligne"><span>Rôle</span><strong><%= userComplet.role %></strong></div>
+        <div class="detail-ligne"><span>Statut étudiant</span>
+          <% if (userComplet.estEtudiantVerifie) { %>
+            <strong style="color:var(--vert);">🎓 Étudiant vérifié ✓</strong>
+          <% } else if (userComplet.estEtudiant) { %>
+            <strong style="color:#856404;">🎓 Étudiant (en attente)</strong>
+          <% } else { %>
+            <strong style="color:var(--texte-gris);">— Non étudiant</strong>
+          <% } %>
+        </div>
+        <% if (userComplet.numeroEtudiant) { %>
+          <div class="detail-ligne"><span>N° étudiant</span><strong><%= userComplet.numeroEtudiant %></strong></div>
+        <% } %>
         <% if (userComplet.role === 'conducteur') { %>
           <div class="detail-ligne"><span>Permis</span><strong><%= userComplet.permis %></strong></div>
           <div class="detail-ligne"><span>Assurance</span><strong><%= userComplet.assurance %></strong></div>
@@ -134,7 +146,7 @@
         } else {
           el.outerHTML = `<img id="photoActuelle" src="${photoData}" style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:3px solid var(--vert);" />`
         }
-        alert('✅ Photo sauvegardée !')
+          alert('✅ Photo sauvegardée !')
       }
     } catch (err) {
       alert('Erreur lors de la sauvegarde.')

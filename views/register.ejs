@@ -58,7 +58,13 @@
 
         <div class="champ">
           <label>Adresse courriel *</label>
-          <input type="email" name="email" placeholder="vous@exemple.ca" required />
+          <input type="email" name="email" placeholder="vous@exemple.ca" required oninput="verifierEtudiant(this.value)" />
+          <small id="msg-etudiant" style="display:none; color:var(--vert); font-weight:600;">🎓 Courriel institutionnel détecté — statut étudiant sera vérifié automatiquement !</small>
+        </div>
+
+        <div class="champ" id="champ-numero-etudiant" style="display:none;">
+          <label>Numéro étudiant (optionnel)</label>
+          <input type="text" name="numeroEtudiant" placeholder="Ex : 123456" />
         </div>
         <div class="champ">
           <label>Mot de passe *</label>
@@ -108,5 +114,13 @@
       document.getElementById('permis').required    = false
       document.getElementById('assurance').required = false
     }
+  }
+
+  const domaines = ['lacitec.on.ca', 'algonquincollege.com', 'uottawa.ca', 'carleton.ca', 'collegedesvallee.on.ca']
+  function verifierEtudiant(email) {
+    const domaine = email.split('@')[1] || ''
+    const estEtudiant = domaines.includes(domaine)
+    document.getElementById('msg-etudiant').style.display         = estEtudiant ? 'block' : 'none'
+    document.getElementById('champ-numero-etudiant').style.display = estEtudiant ? 'block' : 'none'
   }
 </script>

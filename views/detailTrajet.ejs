@@ -38,6 +38,15 @@
         </div>
       </div>
 
+      <!-- Carte du trajet -->
+      <div class="bloc-form">
+        <h3 style="margin-bottom:16px;">🗺️ Carte du trajet</h3>
+        <div id="carte-trajet" style="height:260px; border-radius:12px; overflow:hidden; border:1px solid var(--gris-bord);"></div>
+        <p style="font-size:0.8rem; color:var(--texte-gris); margin-top:8px;">
+          📍 <%= trajet.villeDepart %> → 🎯 <%= trajet.villeArrivee %>
+        </p>
+      </div>
+
       <!-- Préférences -->
       <div class="bloc-form">
         <h3 style="margin-bottom:16px;">⚙️ Préférences du conducteur</h3>
@@ -118,6 +127,34 @@
         <% } %>
 
         <a href="/trajets" class="btn btn-gris btn-plein" style="margin-top:10px;">← Retour</a>
+
+        <!-- Signaler un utilisateur -->
+        <% if (user && trajet.conducteur._id.toString() !== user._id.toString()) { %>
+          <div style="margin-top:24px; border-top:1px solid var(--gris-bord); padding-top:16px;">
+            <details>
+              <summary style="color:var(--texte-gris); font-size:0.85rem; cursor:pointer;">🚨 Signaler un problème</summary>
+              <form action="/signalement" method="POST" style="margin-top:12px; display:flex; flex-direction:column; gap:10px;">
+                <input type="hidden" name="trajetId" value="<%= trajet._id %>">
+                <input type="hidden" name="cibleId" value="<%= trajet.conducteur._id %>">
+                <div class="champ">
+                  <label>Raison</label>
+                  <select name="raison" required>
+                    <option value="">-- Choisir --</option>
+                    <option value="comportement">Comportement inapproprié</option>
+                    <option value="retard">Retard important</option>
+                    <option value="annulation_abusive">Annulation abusive</option>
+                    <option value="autre">Autre</option>
+                  </select>
+                </div>
+                <div class="champ">
+                  <label>Détails (optionnel)</label>
+                  <textarea name="details" rows="2" placeholder="Décrivez brièvement la situation..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-rouge btn-petit">Soumettre le signalement</button>
+              </form>
+            </details>
+          </div>
+        <% } %>
       </div>
 
     </div>
@@ -137,3 +174,63 @@
     .detail-droite { position: static; }
   }
 </style>
+
+<script>
+  // Geocodage avec Nominatim (OpenStreetMap) — gratuit, sans clé API
+  async function geocoder(ville) {
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(ville + ', Canada')}&format=json&limit=1`
+    const res  = await fetch(url, { headers: { 'Accept-Language': 'fr' } })
+    const data = await res.json()
+    if (data.length > 0) return [parseFloat(data[0].lat), parseFloat(data[0].lon)]
+    return null
+  }
+
+  async function initialiserCarte() {
+    const villeDepart  = '<%= trajet.villeDepart %>'
+    const villeArrivee = '<%= trajet.villeArrivee %>'
+
+    const coordDepart  = await geocoder(villeDepart)
+    const coordArrivee = await geocoder(villeArrivee)
+
+    if (!coordDepart || !coordArrivee) {
+      document.getElementById('carte-trajet').innerHTML =
+        '<p style="padding:16px;color:var(--texte-gris);">Carte non disponible pour ces villes.</p>'
+      return
+    }
+
+    // Centrer la carte entre les deux points
+    const centreLat = (coordDepart[0] + coordArrivee[0]) / 2
+    const centreLon = (coordDepart[1] + coordArrivee[1]) / 2
+
+    const carte = L.map('carte-trajet').setView([centreLat, centreLon], 7)
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(carte)
+
+    // Marqueur départ (vert)
+    const iconeDepart = L.divIcon({
+      html: '<div style="background:#16a34a;color:white;padding:4px 8px;border-radius:8px;font-size:0.75rem;font-weight:700;white-space:nowrap;">📍 ' + villeDepart + '</div>',
+      className: '', iconAnchor: [0, 0]
+    })
+
+    // Marqueur arrivée (rouge)
+    const iconeArrivee = L.divIcon({
+      html: '<div style="background:#dc2626;color:white;padding:4px 8px;border-radius:8px;font-size:0.75rem;font-weight:700;white-space:nowrap;">🎯 ' + villeArrivee + '</div>',
+      className: '', iconAnchor: [0, 0]
+    })
+
+    L.marker(coordDepart,  { icon: iconeDepart  }).addTo(carte)
+    L.marker(coordArrivee, { icon: iconeArrivee }).addTo(carte)
+
+    // Ligne entre les deux points
+    L.polyline([coordDepart, coordArrivee], {
+      color: '#16a34a', weight: 3, dashArray: '8, 6', opacity: 0.8
+    }).addTo(carte)
+
+    // Ajuster le zoom pour voir les deux points
+    carte.fitBounds([coordDepart, coordArrivee], { padding: [30, 30] })
+  }
+
+  initialiserCarte()
+</script>

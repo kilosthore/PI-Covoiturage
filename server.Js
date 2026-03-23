@@ -9,7 +9,7 @@ const expressLayouts = require("express-ejs-layouts");
 const app = express();
 
 
-// =======================
+// ======================= 
 // 🔹 Connexion MongoDB
 // =======================
 mongoose.connect(process.env.MONGO_URI)

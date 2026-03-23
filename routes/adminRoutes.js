@@ -1,6 +1,6 @@
 const express = require('express')
 const router  = express.Router()
-const { dashboardAdmin, supprimerUtilisateur, verifierConducteur, supprimerTrajetAdmin } = require('../controllers/adminController')
+const { dashboardAdmin, supprimerUtilisateur, verifierConducteur, supprimerTrajetAdmin, afficherRapports } = require('../controllers/adminController')
 
 // Middleware admin
 const estAdmin = (req, res, next) => {
@@ -13,5 +13,6 @@ router.get('/',                              estAdmin, dashboardAdmin)
 router.post('/utilisateurs/:id/supprimer',   estAdmin, supprimerUtilisateur)
 router.post('/utilisateurs/:id/verifier',    estAdmin, verifierConducteur)
 router.post('/trajets/:id/supprimer',        estAdmin, supprimerTrajetAdmin)
+router.get('/rapports',                         estAdmin, afficherRapports)
 
 module.exports = router

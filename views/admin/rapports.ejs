@@ -1,0 +1,149 @@
+<% layout('layout') %>
+
+<section class="section">
+  <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; flex-wrap:wrap; gap:12px;">
+    <div>
+      <h2>📊 Rapports de covoiturage</h2>
+      <p style="color:var(--texte-gris);">Vue d'ensemble de l'activité sur la plateforme</p>
+    </div>
+    <a href="/admin" class="btn btn-gris">← Retour admin</a>
+  </div>
+
+  <!-- Filtre période -->
+  <div style="display:flex; gap:10px; margin-bottom:32px; flex-wrap:wrap;">
+    <a href="/admin/rapports?periode=semaine" class="btn <%= periode === 'semaine' ? 'btn-vert btn-plein' : 'btn-gris' %>">7 derniers jours</a>
+    <a href="/admin/rapports?periode=mois"    class="btn <%= periode === 'mois'    ? 'btn-vert btn-plein' : 'btn-gris' %>">30 derniers jours</a>
+    <a href="/admin/rapports"                 class="btn <%= periode === 'total'   ? 'btn-vert btn-plein' : 'btn-gris' %>">Tout le temps</a>
+  </div>
+
+  <!-- Stats utilisateurs -->
+  <h3 style="margin-bottom:16px;">👥 Utilisateurs</h3>
+  <div class="rapport-grille" style="margin-bottom:32px;">
+    <div class="rapport-carte">
+      <div class="rapport-num"><%= totalUtilisateurs %></div>
+      <div class="rapport-label">Nouveaux inscrits</div>
+    </div>
+    <div class="rapport-carte">
+      <div class="rapport-num" style="color:#2563eb;"><%= totalConducteurs %></div>
+      <div class="rapport-label">Conducteurs</div>
+    </div>
+    <div class="rapport-carte">
+      <div class="rapport-num" style="color:#7c3aed;"><%= totalPassagers %></div>
+      <div class="rapport-label">Passagers</div>
+    </div>
+  </div>
+
+  <!-- Stats trajets -->
+  <h3 style="margin-bottom:16px;">🚗 Trajets</h3>
+  <div class="rapport-grille" style="margin-bottom:32px;">
+    <div class="rapport-carte">
+      <div class="rapport-num"><%= totalTrajets %></div>
+      <div class="rapport-label">Total trajets</div>
+    </div>
+    <div class="rapport-carte">
+      <div class="rapport-num" style="color:var(--vert);"><%= trajetsActifs %></div>
+      <div class="rapport-label">Actifs</div>
+    </div>
+    <div class="rapport-carte">
+      <div class="rapport-num" style="color:#2563eb;"><%= trajetsComplets %></div>
+      <div class="rapport-label">Complets</div>
+    </div>
+    <div class="rapport-carte">
+      <div class="rapport-num" style="color:var(--rouge);"><%= trajetsAnnules %></div>
+      <div class="rapport-label">Annulés</div>
+    </div>
+  </div>
+
+  <!-- Stats réservations -->
+  <h3 style="margin-bottom:16px;">🎫 Réservations</h3>
+  <div class="rapport-grille" style="margin-bottom:16px;">
+    <div class="rapport-carte">
+      <div class="rapport-num"><%= totalReservations %></div>
+      <div class="rapport-label">Total demandes</div>
+    </div>
+    <div class="rapport-carte">
+      <div class="rapport-num" style="color:var(--vert);"><%= reservAcceptees %></div>
+      <div class="rapport-label">Acceptées</div>
+    </div>
+    <div class="rapport-carte">
+      <div class="rapport-num" style="color:var(--rouge);"><%= reservRefusees %></div>
+      <div class="rapport-label">Refusées</div>
+    </div>
+    <div class="rapport-carte">
+      <div class="rapport-num" style="color:#856404;"><%= reservEnAttente %></div>
+      <div class="rapport-label">En attente</div>
+    </div>
+  </div>
+
+  <!-- Taux d'acceptation -->
+  <div class="bloc-dashboard" style="margin-bottom:32px;">
+    <div class="bloc-titre"><h3>📈 Taux d'acceptation des réservations</h3></div>
+    <div style="padding:16px;">
+      <div style="background:var(--gris-bord); border-radius:99px; height:20px; overflow:hidden;">
+        <div style="background:var(--vert); width:<%= tauxAcceptation %>%; height:100%; border-radius:99px; transition:width 0.5s;"></div>
+      </div>
+      <p style="margin-top:10px; font-weight:700; font-size:1.2rem;"><%= tauxAcceptation %>% des demandes acceptées</p>
+    </div>
+  </div>
+
+  <!-- Stats signalements -->
+  <h3 style="margin-bottom:16px;">🚨 Conflits & Signalements</h3>
+  <div class="rapport-grille" style="margin-bottom:32px;">
+    <div class="rapport-carte">
+      <div class="rapport-num"><%= totalSignalements %></div>
+      <div class="rapport-label">Total signalements</div>
+    </div>
+    <div class="rapport-carte">
+      <div class="rapport-num" style="color:var(--vert);"><%= signalTraites %></div>
+      <div class="rapport-label">Traités</div>
+    </div>
+    <div class="rapport-carte">
+      <div class="rapport-num" style="color:#856404;"><%= signalEnAttente %></div>
+      <div class="rapport-label">En attente</div>
+    </div>
+  </div>
+
+  <!-- Derniers trajets -->
+  <div class="bloc-dashboard">
+    <div class="bloc-titre"><h3>🕐 Derniers trajets publiés</h3></div>
+    <table class="tableau">
+      <thead>
+        <tr><th>Itinéraire</th><th>Conducteur</th><th>Date départ</th><th>Statut</th></tr>
+      </thead>
+      <tbody>
+        <% if (derniersTrajets.length === 0) { %>
+          <tr><td colspan="4" style="text-align:center; color:var(--texte-gris);">Aucun trajet sur cette période</td></tr>
+        <% } %>
+        <% derniersTrajets.forEach(t => { %>
+          <tr>
+            <td><strong><%= t.villeDepart %> → <%= t.villeArrivee %></strong></td>
+            <td><%= t.conducteur ? t.conducteur.prenom + ' ' + t.conducteur.nom : '—' %></td>
+            <td><%= new Date(t.dateDepart).toLocaleDateString('fr-CA') %></td>
+            <td><span class="statut statut-<%= t.statut %>"><%= t.statut %></span></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<style>
+  .rapport-grille {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .rapport-carte {
+    background: white;
+    border: 1px solid var(--gris-bord);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--ombre);
+  }
+  .rapport-num   { font-size: 2rem; font-weight: 800; color: var(--vert); }
+  .rapport-label { color: var(--texte-gris); font-size: 0.85rem; margin-top: 4px; }
+  @media (max-width: 768px) {
+    .rapport-grille { grid-template-columns: 1fr 1fr; }
+  }
+</style>

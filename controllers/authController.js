@@ -5,7 +5,7 @@ const afficherInscription = (req, res) => {
 }
 
 const inscrireUtilisateur = async (req, res) => {
-  const { prenom, nom, email, motDePasse, motDePasseConfirm, role, permis, assurance } = req.body
+  const { prenom, nom, email, motDePasse, motDePasseConfirm, role, permis, assurance, numeroEtudiant } = req.body
 
   if (!prenom || !nom || !email || !motDePasse || !motDePasseConfirm || !role) {
     req.flash('error_msg', 'Veuillez remplir tous les champs obligatoires.')
@@ -27,6 +27,12 @@ const inscrireUtilisateur = async (req, res) => {
     return res.redirect('/register')
   }
 
+  // Détection automatique courriel institutionnel
+  const domaines = ['lacitec.on.ca', 'algonquincollege.com', 'uottawa.ca', 'carleton.ca', 'collegedesvallee.on.ca']
+  const domaine  = email.split('@')[1] || ''
+  const estEtudiant = domaines.includes(domaine)
+  const estEtudiantVerifie = estEtudiant // vérifié automatiquement si courriel institutionnel
+
   try {
     const dejaExistant = await User.findOne({ email })
     if (dejaExistant) {
@@ -34,14 +40,16 @@ const inscrireUtilisateur = async (req, res) => {
       return res.redirect('/register')
     }
 
-    const donnees = { prenom, nom, email, motDePasse, role }
+    const donnees = { prenom, nom, email, motDePasse, role, estEtudiant, estEtudiantVerifie }
+    if (numeroEtudiant) donnees.numeroEtudiant = numeroEtudiant
     if (role === 'conducteur') {
       donnees.permis    = permis
       donnees.assurance = assurance
     }
 
     await User.create(donnees)
-    req.flash('success_msg', 'Compte créé ! Connectez-vous.')
+    const msgExtra = estEtudiantVerifie ? ' Statut étudiant vérifié ✅' : ''
+    req.flash('success_msg', 'Compte créé ! Connectez-vous.' + msgExtra)
     res.redirect('/login')
 
   } catch (err) {
