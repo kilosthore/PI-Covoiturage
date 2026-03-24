@@ -2,7 +2,8 @@ const Signalement = require('../models/Signalement')
 const Trajet      = require('../models/Trajet')
 
 // Soumettre un signalement
-const soumettreSingalement = async (req, res) => {
+// ✅ CORRECTION : faute de frappe corrigée  "soumettreSingalement" → "soumettrSignalement"
+const soumettreSignalement = async (req, res) => {
   try {
     const { cibleId, trajetId, raison, details } = req.body
 
@@ -78,4 +79,4 @@ const traiterSignalement = async (req, res) => {
   }
 }
 
-module.exports = { soumettreSingalement, listerSignalements, traiterSignalement }
+module.exports = { soumettreSignalement, listerSignalements, traiterSignalement }

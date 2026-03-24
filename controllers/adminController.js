@@ -1,5 +1,7 @@
 const User    = require('../models/User')
 const Trajet  = require('../models/Trajet')
+const Reservation = require('../models/Reservation')
+const Signalement = require('../models/Signalement')
 
 // Dashboard admin
 const dashboardAdmin = async (req, res) => {
@@ -55,14 +57,9 @@ const supprimerTrajetAdmin = async (req, res) => {
   }
 }
 
-module.exports = { dashboardAdmin, supprimerUtilisateur, verifierConducteur, supprimerTrajetAdmin, afficherRapports }
-
 // Rapports covoiturage
 const afficherRapports = async (req, res) => {
   try {
-    const Reservation  = require('../models/Reservation')
-    const Signalement  = require('../models/Signalement')
-
     const { periode } = req.query
     let dateDebut = new Date(0)
     const maintenant = new Date()
@@ -119,4 +116,6 @@ const afficherRapports = async (req, res) => {
   }
 }
 
-// Remplacer l'export existant
+// ✅ CORRECTION : module.exports déplacé à la FIN du fichier
+// (avant la correction, il était ligne 58, AVANT afficherRapports → la fonction était undefined)
+module.exports = { dashboardAdmin, supprimerUtilisateur, verifierConducteur, supprimerTrajetAdmin, afficherRapports }

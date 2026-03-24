@@ -44,8 +44,11 @@ app.use('/', require('./routes/notificationRoutes'))
 app.use('/', require('./routes/profileRoutes'))
 app.use('/admin', require('./routes/adminRoutes'))
 app.use('/', require('./routes/assistantRoutes'))
+// ✅ CORRECTION : signalementRoutes était absent — route /signalement et /admin/signalements maintenant accessibles
+app.use('/', require('./routes/signalementRoutes'))
 
 // Créer un admin — protégé par code secret
+// ✅ CORRECTION : le mot de passe n'est plus affiché en clair dans la réponse HTTP
 app.get('/creer-admin/:code', async (req, res) => {
   const User = require('./models/User')
   try {
@@ -59,18 +62,16 @@ app.get('/creer-admin/:code', async (req, res) => {
       prenom:     'Admin',
       nom:        'CitéCovoit',
       email:      'admin@citecovoit.ca',
-      motDePasse: 'Admin1234!',
+      motDePasse: process.env.ADMIN_PASSWORD,   // ✅ mot de passe lu depuis .env, pas codé en dur
       role:       'admin'
     })
-    res.send('✅ Admin créé ! Email: admin@citecovoit.ca — Mot de passe: Admin1234! — <a href="/login">Se connecter</a>')
+    res.send('✅ Admin créé ! Connectez-vous avec l\'email admin@citecovoit.ca — <a href="/login">Se connecter</a>')
   } catch (err) {
     res.send('Erreur : ' + err.message)
   }
 })
 
-app.get('/debug-session', (req, res) => {
-  res.json(req.session.user || { message: 'Pas connecté' })
-})
+// ✅ CORRECTION : route /debug-session supprimée — elle exposait les données de session en production
 
 // Page 404
 app.use((req, res) => {

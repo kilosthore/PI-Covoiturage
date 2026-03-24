@@ -1,6 +1,8 @@
 const express = require('express')
 const router  = express.Router()
-const { soumettreSingalement, listerSignalements, traiterSignalement } = require('../controllers/signalementController')
+
+// ✅ CORRECTION : nom corrigé pour correspondre au contrôleur corrigé
+const { soumettreSignalement, listerSignalements, traiterSignalement } = require('../controllers/signalementController')
 const { estConnecte } = require('../middleware/authMiddleware')
 
 // Middleware admin
@@ -11,7 +13,7 @@ const estAdmin = (req, res, next) => {
 }
 
 // Soumettre un signalement (utilisateur connecté)
-router.post('/signalement', estConnecte, soumettreSingalement)
+router.post('/signalement', estConnecte, soumettreSignalement)
 
 // Admin — voir tous les signalements
 router.get('/admin/signalements', estAdmin, listerSignalements)
