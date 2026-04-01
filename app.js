@@ -65,7 +65,7 @@ app.get('/creer-admin/:code', async (req, res) => {
       motDePasse: process.env.ADMIN_PASSWORD,   // ✅ mot de passe lu depuis .env, pas codé en dur
       role:       'admin'
     })
-    res.send('✅ Admin créé ! Connectez-vous avec l\'email admin@citecovoit.ca — <a href="/login">Se connecter</a>')
+    res.send(' Admin créé ! Connectez-vous avec l\'email admin@citecovoit.ca — <a href="/login">Se connecter</a>')
   } catch (err) {
     res.send('Erreur : ' + err.message)
   }
@@ -78,6 +78,7 @@ app.use((req, res) => {
   res.status(404).render('404', { title: 'Page introuvable' })
 })
 
-app.listen(3000, () => {
-  console.log('Site lancé sur http://localhost:3000')
+const PORT = process.env.PORT || 3000
+app.listen(PORT, () => {
+  console.log(`Site lancé sur http://localhost:${PORT}`)
 })
